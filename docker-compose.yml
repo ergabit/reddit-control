@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: isf-reddit-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - reddit-data:/app/data
+      - /home/hermes/.hermes/scripts:/scripts:ro
+      - /home/hermes/workspaces/isearchfrom/content/reddit/radar:/radar:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - API_URL=http://localhost:8000
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: isf-reddit-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: isf-reddit-nginx
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend/build:/usr/share/nginx/html:ro
+    depends_on:
+      - frontend
+
+  radar-scanner:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: isf-reddit-radar
+    restart: unless-stopped
+    volumes:
+      - reddit-data:/app/data
+      - /home/hermes/.hermes/scripts:/scripts:ro
+      - /home/hermes/workspaces/isearchfrom/content/reddit/radar:/radar:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - API_URL=http://backend:8000
+    command: >
+      bash -c "
+        pip install -q playwright &&
+        playwright install chromium &&
+        while true; do
+          python radar_scanner.py quick;
+          sleep 1800;
+        done
+      "
+    depends_on:
+      - backend
+
+volumes:
+  reddit-data:

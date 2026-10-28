@@ -1,0 +1,11 @@
+fastapi==0.133.1
+uvicorn==0.41.0
+httpx==0.28.1
+pydantic==2.13.4
+sse-starlette==3.4.8
+aiohttp==3.14.5
+playwright==1.62.0
+python-multipart==0.0.20
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+pydantic-settings==2.11.0
