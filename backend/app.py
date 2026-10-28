@@ -629,6 +629,7 @@ async def add_tracker_entry(entry: dict):
 @app.get("/api/stats")
 async def get_stats():
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
     stats = {}
