@@ -76,9 +76,9 @@ docker compose up -d --build
 
 ### 4. Access the dashboard
 
-- **Dashboard**: http://localhost:3000 (or your server IP)
-- **Backend API**: http://localhost:8000
-- **Health check**: http://localhost:8000/api/health
+- **Dashboard**: http://localhost:3900 (or your server IP:3900)
+- **Backend API**: http://localhost:8900
+- **Health check**: http://localhost:8900/api/health
 
 ### 5. Run the radar
 
