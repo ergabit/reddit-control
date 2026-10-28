@@ -3,14 +3,15 @@
   import { FileText, RefreshCw, Edit, CheckCircle2, Pencil, RotateCcw, SkipForward, ExternalLink } from 'lucide-svelte';
   import { API_BASE } from '$lib/constants';
 
+  let selectedClient = localStorage.getItem('reddit-control-client') || 'default';
   let drafts: any[] = [];
   let accounts: any[] = [];
   let loading = true;
   let error = '';
   let filterStatus = '';
-  let editingDraft: string | null = null;
+  let editingDraft: string | null = '';
   let editBody = '';
-  let postingDraft: string | null = null;
+  let postingDraft: string | null = '';
   let posting = false;
 
   async function fetchData() {
@@ -31,9 +32,7 @@
   }
 
   async function fetchDrafts() {
-    const params = new URLSearchParams();
-    if (filterStatus) params.set('status', filterStatus);
-    const res = await fetch(`${API_BASE}/api/drafts?${params}`);
+    const res = await fetch(`${API_BASE}/api/drafts?client_id=${selectedClient}&${filterStatus ? 'status=' + filterStatus + '&' : ''}`);
     if (!res.ok) throw new Error('Failed to fetch drafts');
     return res.json();
   }

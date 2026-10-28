@@ -9,10 +9,6 @@
     Eye,
     Plus,
     RefreshCw,
-    Clock,
-    AlertCircle,
-    CheckCircle2,
-    XCircle,
   } from 'lucide-svelte';
   import { API_BASE } from '$lib/constants';
 
@@ -22,18 +18,14 @@
   let accounts: any[] = [];
   let loading = true;
   let error = '';
+  let selectedClient = localStorage.getItem('reddit-control-client') || 'default';
 
-  // Filters
   let filterStatus = '';
   let filterSub = '';
-
-  // Draft editing
   let editingDraft: string | null = null;
   let editBody = '';
-  let postingDraft: string | null = null;
+  let postingDraft: string | null = '';
   let posting = false;
-
-  // Add account
   let showAddAccount = false;
   let newAccount = { username: '', password: '', email: '' };
 
@@ -59,7 +51,7 @@
   }
 
   async function fetchThreads() {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ client_id: selectedClient });
     if (filterStatus) params.set('status', filterStatus);
     if (filterSub) params.set('subreddit', filterSub);
     const res = await fetch(`${API_BASE}/api/threads?${params}`);
@@ -68,19 +60,19 @@
   }
 
   async function fetchDrafts() {
-    const res = await fetch(`${API_BASE}/api/drafts`);
+    const res = await fetch(`${API_BASE}/api/drafts?client_id=${selectedClient}`);
     if (!res.ok) throw new Error('Failed to fetch drafts');
     return res.json();
   }
 
   async function fetchAccounts() {
-    const res = await fetch(`${API_BASE}/api/accounts`);
+    const res = await fetch(`${API_BASE}/api/accounts?client_id=${selectedClient}`);
     if (!res.ok) throw new Error('Failed to fetch accounts');
     return res.json();
   }
 
   async function fetchStats() {
-    const res = await fetch(`${API_BASE}/api/stats`);
+    const res = await fetch(`${API_BASE}/api/stats?client_id=${selectedClient}`);
     if (!res.ok) throw new Error('Failed to fetch stats');
     return res.json();
   }
@@ -109,15 +101,6 @@
     await fetchData();
   }
 
-  async function handleRewrite(draftId: string, feedback: string) {
-    await fetch(`${API_BASE}/api/drafts/${draftId}/rewrite`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feedback }),
-    });
-    await fetchData();
-  }
-
   async function handleEditSave(draftId: string) {
     await fetch(`${API_BASE}/api/drafts/${draftId}/body`, {
       method: 'PUT',
@@ -130,10 +113,10 @@
   }
 
   async function handleAddAccount() {
-    await fetch(`${API_BASE}/api/accounts`, {
+    await fetch(`${API_BASE}/api/accounts?client_id=${selectedClient}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newAccount),
+      body: JSON.stringify({ ...newAccount, client_id: selectedClient }),
     });
     newAccount = { username: '', password: '', email: '' };
     showAddAccount = false;
@@ -144,13 +127,6 @@
     fetchData();
     setInterval(fetchData, 30000);
   });
-
-  function scoreColor(s: number): string {
-    if (s >= 75) return '#3fb950';
-    if (s >= 60) return '#d29922';
-    if (s >= 40) return '#f85149';
-    return '#8b949e';
-  }
 
   function timeAgo(ts: number): string {
     if (!ts) return '';
@@ -169,7 +145,7 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-2xl font-semibold text-foreground">Dashboard</h1>
-      <p class="text-muted-foreground mt-1">iSearchFrom Reddit visibility campaign overview</p>
+      <p class="text-muted-foreground mt-1">Reddit visibility campaign overview</p>
     </div>
     <div class="flex items-center gap-2">
       <button class="btn btn-secondary btn-sm" on:click={fetchData}>
@@ -198,7 +174,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-muted-foreground">Threads Found</p>
-            <p class="text-2xl font-bold text-foreground mt-1">{stats?.tracker?.total ?? 0}</p>
+            <p class="text-2xl font-bold text-foreground mt-1">{stats?.threads_by_status?.new ?? 0}</p>
           </div>
           <div class="h-10 w-10 rounded-lg bg-blue-600/10 flex items-center justify-center">
             <Search class="h-5 w-5 text-blue-400" />
@@ -231,7 +207,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-muted-foreground">Total Replies</p>
-            <p class="text-2xl font-bold text-foreground mt-1">{stats?.tracker?.total_replies ?? 0}</p>
+            <p class="text-2xl font-bold text-foreground mt-1">{stats?.tracker?.total ?? 0}</p>
           </div>
           <div class="h-10 w-10 rounded-lg bg-purple-600/10 flex items-center justify-center">
             <MessageSquare class="h-5 w-5 text-purple-400" />

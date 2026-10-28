@@ -3,6 +3,7 @@
   import { Search, RefreshCw, ExternalLink, MessageCircle } from 'lucide-svelte';
   import { API_BASE } from '$lib/constants';
 
+  let selectedClient = localStorage.getItem('reddit-control-client') || 'default';
   let threads: any[] = [];
   let loading = true;
   let error = '';
@@ -10,7 +11,7 @@
   let filterSub = '';
 
   async function fetchThreads() {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ client_id: selectedClient });
     if (filterStatus) params.set('status', filterStatus);
     if (filterSub) params.set('subreddit', filterSub);
     const res = await fetch(`${API_BASE}/api/threads?${params}`);

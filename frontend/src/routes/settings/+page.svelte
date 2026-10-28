@@ -1,15 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Settings, Moon, Sun, RefreshCw, Zap, Shield, Clock } from 'lucide-svelte';
+  import { Settings, RefreshCw, Zap, Shield, Clock, Building2, ExternalLink } from 'lucide-svelte';
   import { API_BASE } from '$lib/constants';
 
+  let selectedClient = localStorage.getItem('reddit-control-client') || 'default';
   let config: any = {};
   let loading = true;
   let error = '';
   let saving = false;
 
   async function fetchConfig() {
-    const res = await fetch(`${API_BASE}/api/config`);
+    const res = await fetch(`${API_BASE}/api/config?client_id=${selectedClient}`);
     if (!res.ok) throw new Error('Failed to fetch config');
     return res.json();
   }
@@ -17,7 +18,7 @@
   async function updateConfig(updates: any) {
     saving = true;
     try {
-      await fetch(`${API_BASE}/api/config`, {
+      await fetch(`${API_BASE}/api/config?client_id=${selectedClient}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -170,9 +171,36 @@
             <span class="text-foreground font-mono">http://192.168.0.38:8900</span>
           </div>
           <div class="flex items-center justify-between text-sm">
+            <span class="text-muted-foreground">MCP Endpoint</span>
+            <span class="text-foreground font-mono">POST /api/mcp/call</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
             <span class="text-muted-foreground">Last Updated</span>
             <span class="text-foreground">{new Date().toLocaleString()}</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Client Management -->
+    <div class="card">
+      <div class="card-header">
+        <div class="flex items-center gap-2">
+          <Building2 class="h-5 w-5 text-blue-400" />
+          <h2 class="card-title">Client Management</h2>
+        </div>
+        <p class="card-description">Manage multiple clients, each with their own radar, accounts, and settings.</p>
+      </div>
+      <div class="card-content">
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-muted-foreground">Current client:</span>
+          <span class="text-sm font-medium text-foreground">{selectedClient}</span>
+        </div>
+        <div class="mt-4">
+          <a href="https://github.com/ergabit/isf-reddit-control" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+            <ExternalLink class="h-3 w-3" />
+            View API Docs
+          </a>
         </div>
       </div>
     </div>

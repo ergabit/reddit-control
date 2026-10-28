@@ -3,6 +3,7 @@
   import { BarChart3, TrendingUp, MessageSquare, Eye, ExternalLink } from 'lucide-svelte';
   import { API_BASE } from '$lib/constants';
 
+  let selectedClient = localStorage.getItem('reddit-control-client') || 'default';
   let tracker: any[] = [];
   let stats: any = null;
   let loading = true;
@@ -26,7 +27,7 @@
   }
 
   async function fetchTracker() {
-    const res = await fetch(`${API_BASE}/api/tracker?limit=100`);
+    const res = await fetch(`${API_BASE}/api/tracker?client_id=${selectedClient}&limit=100`);
     if (!res.ok) throw new Error('Failed to fetch tracker');
     return res.json();
   }

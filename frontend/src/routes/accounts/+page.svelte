@@ -3,6 +3,7 @@
   import { Users, Plus, RefreshCw, Trash2, Eye, EyeOff, Ban } from 'lucide-svelte';
   import { API_BASE } from '$lib/constants';
 
+  let selectedClient = localStorage.getItem('reddit-control-client') || 'default';
   let accounts: any[] = [];
   let loading = true;
   let error = '';
@@ -10,7 +11,7 @@
   let newAccount = { username: '', password: '', email: '' };
 
   async function fetchAccounts() {
-    const res = await fetch(`${API_BASE}/api/accounts`);
+    const res = await fetch(`${API_BASE}/api/accounts?client_id=${selectedClient}`);
     if (!res.ok) throw new Error('Failed to fetch accounts');
     return res.json();
   }
