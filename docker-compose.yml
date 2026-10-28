@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: isf-reddit-backend
+    container_name: reddit-control-backend
     restart: unless-stopped
     ports:
       - "8900:8000"
@@ -27,7 +25,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: isf-reddit-frontend
+    container_name: reddit-control-frontend
     restart: unless-stopped
     ports:
       - "3900:80"
@@ -36,7 +34,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: isf-reddit-nginx
+    container_name: reddit-control-nginx
     restart: unless-stopped
     ports:
       - "4900:80"
@@ -52,7 +50,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: isf-reddit-radar
+    container_name: reddit-control-radar
     restart: unless-stopped
     volumes:
       - reddit-data:/app/data

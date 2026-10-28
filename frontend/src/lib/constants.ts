@@ -7,4 +7,4 @@ export function api() {
   return process.env.API_URL || 'http://localhost:8000';
 }
 
-export const API = api();
+export const API_BASE = api();
